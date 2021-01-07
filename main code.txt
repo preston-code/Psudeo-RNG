@@ -1,0 +1,371 @@
+import tkinter as tkinter
+from PIL import Image, ImageTk
+import time
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BOARD)
+ControlPin = [29, 31, 33, 35]
+for pin in ControlPin:
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, 0)
+seq = [[1, 0, 0, 0],
+       [1, 1, 0, 0],
+       [0, 1, 0, 0],
+       [0, 1, 1, 0],
+       [0, 0, 1, 0],
+       [0, 0, 1, 1],
+       [0, 0, 0, 1],
+       [1, 0, 0, 1]]
+
+GPIO.setup(37, GPIO.IN)
+sensor = GPIO.input(37)
+
+# rasp edit 2.2
+
+d = [0] * 167
+
+q = [0] * 167
+
+d = [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0,
+     0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0,
+     0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1,
+     1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+
+w1b1 = d[17]
+w1b2 = d[122]
+w1b3 = d[32]
+
+w2b1 = d[4]
+w2b2 = d[100]
+w2b3 = d[86]
+
+w3b1 = d[163]
+w3b2 = d[111]
+w3b3 = d[10]
+
+global repeat
+repeat = 0
+count = 0
+amount = 0
+global cancel
+cancel = 0
+
+# OUTCOMES
+cherry = 0
+seven = 1
+onebar = 2
+orange = 3
+twobar = 4
+lemon = 5
+threebar = 6
+grape = 7
+
+path = ['', '', '', '', '', '', '', '', '']
+path[0] = "cherry.gif"
+path[1] = "seven.gif"
+path[2] = "onebar.gif"
+path[3] = "orange.gif"
+path[4] = "twobar.gif"
+path[5] = "lemon.gif"
+path[6] = "threebar.gif"
+path[7] = "grape.gif"
+path[8] = "blank.gif"
+
+global balance, bal, prize, IRepeat, IRepeat2, temp
+temp = 0
+IRepeat = 0
+IRepeat2 = 0
+prize = 0
+bal = 5
+
+
+def fetchOutcome():
+    global w1b1, w1b2, w1b3, w2b1, w2b2, w2b3, w3b1, w3b2, w3b3, path, bal, prize, repeat, cancel
+
+    if (bal < 1):
+        error.configure(text="no credit", fg="white", bg="red")
+        return
+    else:
+        error.configure(text="", fg="white", bg="white")
+
+    # Get outcome for the first wheel
+    if (w1b1 == 0 and w1b2 == 0 and w1b3 == 0):
+        w1 = cherry
+        out1 = img0
+    elif (w1b1 == 0 and w1b2 == 0 and w1b3 == 1):
+        w1 = seven
+        out1 = img1
+    elif (w1b1 == 0 and w1b2 == 1 and w1b3 == 0):
+        w1 = onebar
+        out1 = img2
+    elif (w1b1 == 0 and w1b2 == 1 and w1b3 == 1):
+        w1 = orange
+        out1 = img3
+    elif (w1b1 == 1 and w1b2 == 0 and w1b3 == 0):
+        w1 = twobar
+        out1 = img4
+    elif (w1b1 == 1 and w1b2 == 0 and w1b3 == 1):
+        w1 = lemon
+        out1 = img5
+    elif (w1b1 == 1 and w1b2 == 1 and w1b3 == 0):
+        w1 = threebar
+        out1 = img6
+    elif (w1b1 == 1 and w1b2 == 1 and w1b3 == 1):
+        w1 = grape
+        out1 = img7
+
+    # Get outcome for the second wheel
+    if (w2b1 == 0 and w2b2 == 0 and w2b3 == 0):
+        w2 = cherry
+        out2 = img0
+    elif (w2b1 == 0 and w2b2 == 0 and w2b3 == 1):
+        w2 = seven
+        out2 = img1
+    elif (w2b1 == 0 and w2b2 == 1 and w2b3 == 0):
+        w2 = onebar
+        out2 = img2
+    elif (w2b1 == 0 and w2b2 == 1 and w2b3 == 1):
+        w2 = orange
+        out2 = img3
+    elif (w2b1 == 1 and w2b2 == 0 and w2b3 == 0):
+        w2 = twobar
+        out2 = img4
+    elif (w2b1 == 1 and w2b2 == 0 and w2b3 == 1):
+        w2 = lemon
+        out2 = img5
+    elif (w2b1 == 1 and w2b2 == 1 and w2b3 == 0):
+        w2 = threebar
+        out2 = img6
+    elif (w2b1 == 1 and w2b2 == 1 and w2b3 == 1):
+        w2 = grape
+        out2 = img7
+
+    # Get outcome for the third wheel
+    if (w3b1 == 0 and w3b2 == 0 and w3b3 == 0):
+        w3 = cherry
+        out3 = img0
+    elif (w3b1 == 0 and w3b2 == 0 and w3b3 == 1):
+        w3 = seven
+        out3 = img1
+    elif (w3b1 == 0 and w3b2 == 1 and w3b3 == 0):
+        w3 = onebar
+        out3 = img2
+    elif (w3b1 == 0 and w3b2 == 1 and w3b3 == 1):
+        w3 = orange
+        out3 = img3
+    elif (w3b1 == 1 and w3b2 == 0 and w3b3 == 0):
+        w3 = twobar
+        out3 = img4
+    elif (w3b1 == 1 and w3b2 == 0 and w3b3 == 1):
+        w3 = lemon
+        out3 = img5
+    elif (w3b1 == 1 and w3b2 == 1 and w3b3 == 0):
+        w3 = threebar
+        out3 = img6
+    elif (w3b1 == 1 and w3b2 == 1 and w3b3 == 1):
+        w3 = grape
+        out3 = img7
+
+    # Change picture on wheel 1
+    pic1.configure(image=out1)
+    pic2.configure(image=out2)
+    pic3.configure(image=out3)
+
+    # triple win
+    if (w1 == w2 == w3):
+        if (w1 == 0):
+            prize = 7
+        elif (w1 == 1):
+            prize = 12
+        elif (w1 == 2):
+            prize = 5
+        elif (w1 == 3):
+            prize = 8
+        elif (w1 == 4):
+            prize = 10
+        elif (w1 == 5):
+            prize = 10
+        elif (w1 == 6):
+            prize = 10
+        elif (w1 == 7):
+            prize = 8
+
+    # double win
+    elif ((w1 == w2 and w2 != w3) or (w1 == w3 and w2 != w3)):
+        if (w1 == 0):
+            prize = 2
+        elif (w1 == 1):
+            prize = 5
+        elif (w1 == 2):
+            prize = 1
+        elif (w1 == 3):
+            prize = 2
+        elif (w1 == 4):
+            prize = 2
+        elif (w1 == 5):
+            prize = 2
+        elif (w1 == 6):
+            prize = 4
+        elif (w1 == 7):
+            prize = 2
+
+    # double win
+    elif (w2 == w3 and w1 != w2):
+        if (w2 == 0):
+            prize = 2
+        elif (w2 == 1):
+            prize = 5
+        elif (w2 == 2):
+            prize = 1
+        elif (w2 == 3):
+            prize = 2
+        elif (w2 == 4):
+            prize = 2
+        elif (w2 == 5):
+            prize = 2
+        elif (w2 == 6):
+            prize = 4
+        elif (w2 == 7):
+            prize = 2
+
+    else:
+        prize = 0
+
+    if (prize > 0):
+        prize_label.configure(text="You won " + str(prize) + " tokens", fg="blue")
+    else:
+        prize_label.configure(text="You lose", fg="red")
+
+    bal -= 1
+    bal += prize
+    balance.configure(text="Balance: " + str(bal))
+
+
+def rng():
+    global d, q, count, w1b1, w1b2, w1b3, w2b1, w2b2, w2b3, w3b1, w3b2, w3b3, IRepeat, IRepeat2
+
+    q[0] = d[0]
+    if (d[166] == 0 and d[160] == 0):
+        d[0] = 1
+    elif (d[166] == 0 and d[160] == 1):
+        d[0] = 0
+    elif (d[166] == 1 and d[160] == 0):
+        d[0] = 0
+    elif (d[166] == 1 and d[160] == 1):
+        d[0] = 1
+
+    for x in range(1, 167):
+        q[x] = d[x]
+        d[x] = q[x - 1]
+    count += 1
+
+    # set wheel one bits
+    w1b1 = d[17]
+    w1b2 = d[122]
+    w1b3 = d[32]
+
+    # set wheel two bits
+    w2b1 = d[4]
+    w2b2 = d[100]
+    w2b3 = d[86]
+
+    # set wheel 3 bits
+    w3b1 = d[163]
+    w3b2 = d[111]
+    w3b3 = d[10]
+
+    # change text
+    button1.config(text="spin")
+
+    checkInput()
+
+    # repeat rng
+    button1.after(1, rng)
+
+
+def cashout():
+    GPIO.setwarnings(False)
+    global bal, ControlPin, seq
+
+    for j in range(bal):
+        for i in range(128):
+            for halfstep in range(8):
+                for pin in range(4):
+                    GPIO.output(ControlPin[pin], seq[halfstep][pin])
+                time.sleep(0.001)
+    bal = 0
+    balance.configure(text="Balance: " + str(bal))
+
+
+def checkInput():
+    global bal, IRepeat, sensor, IRepeat2, temp
+    sensor = GPIO.input(37)
+    if sensor == 1:
+        IRepeat += 1
+        print("Sensor=", sensor, "   Positive=", IRepeat)
+        balance.configure(text="Balance: " + str(bal))
+        if temp < 0:
+            temp = 0
+        else:
+            temp += 1
+    elif sensor == 0:
+        print("Sensor=", sensor, "   IR2=", IRepeat2)
+        IRepeat2 += 1
+        balance.configure(text="Balance: " + str(bal))
+        if temp > 0:
+            temp = 0
+        else:
+            temp -= 1
+
+    if IRepeat == 50:
+        bal += 1
+
+    if temp < -20:
+        IRepeat = 0
+    elif temp > 30:
+        IRepeat2 = 0
+
+
+window = tkinter.Tk()
+
+window.title("Psuedo Random Number Generation Applications in Gambling")
+window.geometry("800x480")
+
+button1 = tkinter.Button(window, text="Spin", font="Ariel 55 bold", command=fetchOutcome)
+button1.grid(pady=20, padx=20, column=0, row=1)
+
+button2 = tkinter.Button(window, text="Cashout", font="Ariel 45 bold", command=cashout)
+button2.grid(column=2, row=1)
+
+prize_label = tkinter.Label(window, font="Helvetica 16 bold")
+prize_label.grid(column=1, row=2)
+
+img0 = ImageTk.PhotoImage(Image.open(path[0]))
+img1 = ImageTk.PhotoImage(Image.open(path[1]))
+img2 = ImageTk.PhotoImage(Image.open(path[2]))
+img3 = ImageTk.PhotoImage(Image.open(path[3]))
+img4 = ImageTk.PhotoImage(Image.open(path[4]))
+img5 = ImageTk.PhotoImage(Image.open(path[5]))
+img6 = ImageTk.PhotoImage(Image.open(path[6]))
+img7 = ImageTk.PhotoImage(Image.open(path[7]))
+img8 = ImageTk.PhotoImage(Image.open(path[8]))
+
+pic1 = tkinter.Label(window, image=img8)
+pic1.grid(pady=20, padx=20, column=0, row=0)
+
+pic2 = tkinter.Label(window, image=img8)
+pic2.grid(pady=20, padx=20, column=1, row=0)
+
+pic3 = tkinter.Label(window, image=img8)
+pic3.grid(pady=20, padx=20, column=2, row=0)
+
+balance = tkinter.Label(window, text="Balance: " + str(bal), font="Helvetica 16 bold", fg="white", bg="black")
+balance.grid(column=2, row=2)
+
+error = tkinter.Label(window)
+error.grid(column=1, row=1)
+
+rng()
+
+window.mainloop()
